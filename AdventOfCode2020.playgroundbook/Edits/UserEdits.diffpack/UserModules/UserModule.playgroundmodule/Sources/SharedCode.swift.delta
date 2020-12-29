@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>import Foundation
+import Combine
+import PlaygroundSupport
+
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 59}</string>
+			<key>OriginalContent</key>
+			<string></string>
+			<key>OriginalRange</key>
+			<string>{0, 0}</string>
+		</dict>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>
+public struct DayOneWire : Decodable {
+    public var theItems =  Array&lt;Int&gt;()
+}
+
+public class DayOneWireDecoder : TopLevelDecoder {
+    public func decode&lt;T&gt;(_ type: T.Type, from: Data) throws -&gt; T where T : Decodable {
+        var returnItems = DayOneWire()
+        let theItems = String(data:from,encoding: .utf8)
+        var itms = theItems?.split(separator: "\n")
+        itms?.forEach() {
+            theitem in  returnItems.theItems.append(Int(theitem)!)
+        }
+        return returnItems as! T
+    }
+}
+public struct DayTwoData : Decodable {
+    public var items = Array&lt;DayTwoDataItem&gt;()
+}
+
+public struct DayTwoDataItem : Decodable {
+    public var patternMin: Int
+    public var patternMax: Int
+    public var pattern: String
+    public var search: String
+}
+
+class DayTwoDataDecoder : TopLevelDecoder {
+    func decode&lt;T&gt;(_ type: T.Type, from: Data) throws -&gt; T where T : Decodable {
+        var returnValue = DayTwoData()
+        var items = String(data: from, encoding: .utf8)?.split(separator: "\n")
+        items?.forEach{item in 
+            var cols = item.split(separator: " ")
+            var min = 0
+            var max = 0
+            var pattern = ""
+            var search = cols[2]
+            returnValue.items.append(DayTwoDataItem(patternMin: min, patternMax: max, pattern: String(search), search: pattern))
+        }
+        return returnValue as! T
+    }
+}
+
+public class AOCDataLayer {
+    var cancel: AnyCancellable?
+    public var dayOneData: DayOneWire?
+    let cookie = ""
+    
+    public init() {
+    }
+    
+    public func getDataDayOne(theUrl: URL) {
+        var clo = {(d:DayOneWire) in
+            self.dayOneData = d
+        }
+        print ("Begin: getDataDayOne \(theUrl)")
+        getDataStringCombine(theUrl: theUrl, done: clo)
+        print ("End: getDataDayOne")
+    }
+    
+    public func getDataDayTwo(theUrl: URL)
+    {
+        print ("Begin: getDataDayTwo \(theUrl)")
+        var clo = {(d:DayOneWire) in
+            self.dayOneData = d
+            print("Done \(d)")
+        }
+        getDataStringCombine(theUrl: theUrl, done: clo)
+        print ("End: getDataDayTwo")
+    }
+    
+    enum getStringError : Error {
+        case CantConnect(reason:String)
+    }
+    
+    public func getDataStringCombine(theUrl: URL, done: @escaping (DayOneWire)-&gt;Void) {
+        if self.cancel != nil {
+            print("Existing operation in progress")
+            return
+        }
+        var request = URLRequest(url: theUrl)
+        request.setValue("session=\(self.cookie)", forHTTPHeaderField: "cookie")
+        
+        self.cancel = URLSession.shared.dataTaskPublisher(for:request)
+            .tryMap{d -&gt; Data in
+                //TODO: move this to gaurd let
+                switch d.response {
+//                  case is URLResponse:
+//                      print ("URL Response")
+//                      break
+                    case let foo as HTTPURLResponse:
+                        print("Map response code: \(foo.statusCode) data:\(d.data)")
+                        if foo.statusCode != 200 {
+                            throw getStringError.CantConnect(reason: String(data:d.data, encoding: .utf8)!)
+                        }
+                    break
+                default:
+                    print("Default")
+}
+                return d.data}
+            .decode(type: DayOneWire.self, decoder: DayOneWireDecoder())
+            .sink{
+                thing in 
+                switch thing {
+                case .failure(let err) :
+                    print("Fail \(err)")
+                    self.cancel=nil
+                    return
+                case.finished :
+                    return
+            }
+                
+            } receiveValue: {theData in  
+                done(theData)
+                self.cancel=nil
+            }
+    }
+    
+    func saveData() {
+//          print(self.dayOneData?.theItems.count)
+//          let jsonData = try! JSONEncoder().encode(self.dayOneData)
+//          PlaygroundKeyValueStore.current["foo"] = PlaygroundValue.string(jsonData.base64EncodedString())
+    }
+    
+    func loadData() {
+//          var result: String? = nil
+//          if let kv = PlaygroundKeyValueStore.current["foo"], case .string(let theType) = kv {
+//              result = theType
+//              guard let converted = try Data(base64Encoded: result ?? &lt;#default value#&gt;) else { return &lt;#default value#&gt; }
+//              
+//              var decoded = try! JSONDecoder().decode(AdventOfCodeState.self, from: converted)
+//              print(decoded.firstDayData.count)
+//              self.data = decoded
+        //}
+}
+
+
+}
+</string>
+			<key>ModifiedRange</key>
+			<string>{134, 4612}</string>
+			<key>OriginalContent</key>
+			<string></string>
+			<key>OriginalRange</key>
+			<string>{75, 0}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>UserModules/UserModule.playgroundmodule/Sources/SharedCode.swift</string>
+</dict>
+</plist>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>import SwiftUI
+import PlaygroundSupport
+
+struct AdventOfCodeState {
+    
+    func findSumTwoPairBruteForce(input: [Int], searchTotal: Int) -&gt; (value1:Int, value2: Int){
+        for outer in input {
+            for inner in input {
+                if outer + inner == searchTotal {
+                    //found
+                    return (inner, outer)
+                }
+            }
+        }
+        return (-1, -1)
+    }
+    
+    func findSumTwoPairOptimizeOne(input: [Int], searchTotal: Int) -&gt; (value1:Int, value2: Int){
+        var cache = Dictionary&lt;Int,Int&gt;()
+        for outer in input {
+            let compliment = searchTotal-outer
+            if cache.contains(where:{foo in foo.key==compliment}) {
+                return (outer, cache[compliment]!)
+            }else {
+                cache[outer] = outer
+            }
+        }
+        return (-1, -1)
+    }
+    
+    func findSumTupleBruteForce(input: [Int], searchTotal: Int) -&gt; (value1:Int, value2: Int, value3: Int){
+        for outer in input {
+            for inner in input {
+                for ringzero in input {
+                if outer + inner + ringzero == searchTotal {
+                    //found
+                    return (inner, outer, ringzero)
+                }
+                }
+            }
+        }
+        return (-1, -1, -1)
+    }
+}
+
+struct ContentView: View {
+    var dataLoader = AOCDataLayer()
+    @State var data = AdventOfCodeState()
+    
+    func getData() {
+        let dayOneUrl =  URL(string:"https://adventofcode.com/2020/day/1/input")!
+        
+        self.dataLoader.getDataDayOne(theUrl:dayOneUrl)
+    }
+    
+    
+    func dayOne() {
+//          let result = self.data.findSumBruteForce(searchTotal: 2020)
+        let result = self.data.findSumTwoPairOptimizeOne(input: self.dataLoader.dayOneData!.theItems, searchTotal: 2020)
+        print("First: \(result.value1) Second \(result.value2) Product \(result.value1*result.value2)")
+    }
+    
+    func dayOnePartTwo() {
+        let result = self.data.findSumTupleBruteForce(input: self.dataLoader.dayOneData!.theItems, searchTotal: 2020)
+//          let result = self.data.findSumTwoPairOptimizeOne(input: self.dataLoader.dayOneData!.theItems, searchTotal: &lt;#T##Int#&gt;)
+        print("First: \(result.value1) Second \(result.value2) Third \(result.value3) Product \(result.value1*result.value2*result.value3)")
+    }
+    
+    func getDataDay2() {
+        let dayTwoUrl =  URL(string:"https://adventofcode.com/2020/day/2/input")!
+        self.dataLoader.getDataDayTwo(theUrl: dayTwoUrl)
+    }
+    
+    func dayTwo() {
+        //getDataDay2()
+    }
+    
+    var body: some View {
+        let theWidth : CGFloat = 90
+        VStack {
+        HStack {
+            Button("Get Day1 Data Web", action: getData)
+                .frame(width: theWidth, height: 50)
+//              Button("Save", action: saveData).frame(width: theWidth, height: 50);
+//              Button("Load", action: loadData).frame(width: theWidth, height: 50)
+            Button("Day 1", action: dayOne).frame(width: theWidth, height: 50)
+            Button("Day 1 part 2", action: dayOnePartTwo).frame(width: theWidth, height: 50)
+            
+        };
+        HStack {
+            Button("Get Day2 Data Web", action: getDataDay2)
+                .frame(width: theWidth, height: 50)
+            Button("Day 2", action: dayTwo).frame(width: theWidth, height: 50)
+        }
+    }
+    }
+}
+
+
+PlaygroundPage.current.setLiveView(ContentView())
+</string>
+			<key>ModifiedRange</key>
+			<string>{0, 3460}</string>
+			<key>OriginalContent</key>
+			<string>
+</string>
+			<key>OriginalRange</key>
+			<string>{0, 1}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>
