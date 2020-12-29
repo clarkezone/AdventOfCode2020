@@ -66,6 +66,7 @@ class DayTwoDataDecoder : TopLevelDecoder {
 public class AOCDataLayer {
     var cancel: AnyCancellable?
     public var dayOneData: DayOneWire?
+    public var dayTwoData: DayTwoData?
     let cookie = ""
     
     public init() {
@@ -83,11 +84,11 @@ public class AOCDataLayer {
     public func getDataDayTwo(theUrl: URL)
     {
         print ("Begin: getDataDayTwo \(theUrl)")
-        var clo = {(d:DayOneWire) in
-            self.dayOneData = d
+        var clo = {(d:DayTwoData) in
+            self.dayTwoData = d
             print("Done \(d)")
         }
-        getDataStringCombine(theUrl: theUrl, done: clo)
+        getData(theUrl: theUrl, done: clo, type: DayTwoData.self, decoder: DayTwoDataDecoder())
         print ("End: getDataDayTwo")
     }
     
@@ -138,6 +139,49 @@ public class AOCDataLayer {
             }
     }
     
+    public func getData&lt;Item, Coder&gt;(theUrl: URL, done: @escaping (Item)-&gt;Void, type: Item.Type, decoder: Coder) where Item: Decodable, Coder : TopLevelDecoder {
+        if self.cancel != nil {
+            print("Existing operation in progress")
+            return
+        }
+        var request = URLRequest(url: theUrl)
+        request.setValue("session=\(self.cookie)", forHTTPHeaderField: "cookie")
+        
+        self.cancel = URLSession.shared.dataTaskPublisher(for:request)
+            .tryMap{d -&gt; Coder.Input in
+                //TODO: move this to gaurd let
+                switch d.response {
+                //                  case is URLResponse:
+                //                      print ("URL Response")
+                //                      break
+                case let foo as HTTPURLResponse:
+                    print("Map response code: \(foo.statusCode) data:\(d.data)")
+                    if foo.statusCode != 200 {
+                        throw getStringError.CantConnect(reason: String(data:d.data, encoding: .utf8)!)
+                    }
+                    break
+                default:
+                    print("Default")
+                }
+                return d.data as! Coder.Input}
+            .decode(type: type, decoder: decoder)
+            .sink{
+                thing in 
+                switch thing {
+                case .failure(let err) :
+                    print("Fail \(err)")
+                    self.cancel=nil
+                    return
+                case.finished :
+                    return
+                }
+                
+            } receiveValue: {theData in  
+                done(theData)
+                self.cancel=nil
+            }
+    }
+    
     func saveData() {
 //          print(self.dayOneData?.theItems.count)
 //          let jsonData = try! JSONEncoder().encode(self.dayOneData)
@@ -160,7 +204,7 @@ public class AOCDataLayer {
 }
 </string>
 			<key>ModifiedRange</key>
-			<string>{134, 4612}</string>
+			<string>{134, 6412}</string>
 			<key>OriginalContent</key>
 			<string></string>
 			<key>OriginalRange</key>
