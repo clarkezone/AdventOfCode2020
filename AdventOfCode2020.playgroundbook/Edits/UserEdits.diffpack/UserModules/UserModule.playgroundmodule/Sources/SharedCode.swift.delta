@@ -53,9 +53,10 @@ class DayTwoDataDecoder : TopLevelDecoder {
         var items = String(data: from, encoding: .utf8)?.split(separator: "\n")
         items?.forEach{item in 
             var cols = item.split(separator: " ")
-            var min = 0
-            var max = 0
-            var pattern = ""
+            var minmax = cols[0].split(separator: "-")
+            var min = Int(minmax[0])!
+            var max = Int(minmax[1])!
+            var pattern = String(cols[1])
             var search = cols[2]
             returnValue.items.append(DayTwoDataItem(patternMin: min, patternMax: max, pattern: String(search), search: pattern))
         }
@@ -67,7 +68,7 @@ public class AOCDataLayer {
     var cancel: AnyCancellable?
     public var dayOneData: DayOneWire?
     public var dayTwoData: DayTwoData?
-    let cookie = ""
+    let cookie = "53616c7465645f5fa2ab686becb6923f42f84ab2d0ba34c8e4a1584cbcc4dac48a906b3f1e0691fe2558bfa7616d9e30"
     
     public init() {
     }
@@ -77,7 +78,7 @@ public class AOCDataLayer {
             self.dayOneData = d
         }
         print ("Begin: getDataDayOne \(theUrl)")
-        getDataStringCombine(theUrl: theUrl, done: clo)
+        getData(theUrl: theUrl, done: clo, type: DayOneWire.self, decoder: DayOneWireDecoder())
         print ("End: getDataDayOne")
     }
     
@@ -94,49 +95,6 @@ public class AOCDataLayer {
     
     enum getStringError : Error {
         case CantConnect(reason:String)
-    }
-    
-    public func getDataStringCombine(theUrl: URL, done: @escaping (DayOneWire)-&gt;Void) {
-        if self.cancel != nil {
-            print("Existing operation in progress")
-            return
-        }
-        var request = URLRequest(url: theUrl)
-        request.setValue("session=\(self.cookie)", forHTTPHeaderField: "cookie")
-        
-        self.cancel = URLSession.shared.dataTaskPublisher(for:request)
-            .tryMap{d -&gt; Data in
-                //TODO: move this to gaurd let
-                switch d.response {
-//                  case is URLResponse:
-//                      print ("URL Response")
-//                      break
-                    case let foo as HTTPURLResponse:
-                        print("Map response code: \(foo.statusCode) data:\(d.data)")
-                        if foo.statusCode != 200 {
-                            throw getStringError.CantConnect(reason: String(data:d.data, encoding: .utf8)!)
-                        }
-                    break
-                default:
-                    print("Default")
-}
-                return d.data}
-            .decode(type: DayOneWire.self, decoder: DayOneWireDecoder())
-            .sink{
-                thing in 
-                switch thing {
-                case .failure(let err) :
-                    print("Fail \(err)")
-                    self.cancel=nil
-                    return
-                case.finished :
-                    return
-            }
-                
-            } receiveValue: {theData in  
-                done(theData)
-                self.cancel=nil
-            }
     }
     
     public func getData&lt;Item, Coder&gt;(theUrl: URL, done: @escaping (Item)-&gt;Void, type: Item.Type, decoder: Coder) where Item: Decodable, Coder : TopLevelDecoder {
@@ -204,7 +162,7 @@ public class AOCDataLayer {
 }
 </string>
 			<key>ModifiedRange</key>
-			<string>{134, 6412}</string>
+			<string>{134, 5045}</string>
 			<key>OriginalContent</key>
 			<string></string>
 			<key>OriginalRange</key>
